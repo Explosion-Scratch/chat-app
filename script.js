@@ -214,6 +214,7 @@ function html(markdown) {
   output = output.replace("/tableflip", "┬─┬ノ( º _ ºノ) ");
   output = output.replace("/eyes", "( ಠ ͜ʖ ಠ ) ");
   output = output.replace("/confused", "( ͡❛ ⍨ ͡❛)");
+  output = output.replace("/facepalm", "(－‸ლ)");
   return output;
 }
 
