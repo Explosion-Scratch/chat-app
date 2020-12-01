@@ -215,6 +215,7 @@ function html(markdown) {
   output = output.replace("/eyes", "( ಠ ͜ʖ ಠ ) ");
   output = output.replace("/bye", "ʕ•́ᴥ•̀ʔっ");
   output = output.replace("/facepalm", "(－‸ლ)");
+  output = output.replace("/bruh", "(ㆆ_ㆆ)");
   return output;
 }
 
