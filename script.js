@@ -216,6 +216,7 @@ function html(markdown) {
   output = output.replace("/bye", "ʕ•́ᴥ•̀ʔっ");
   output = output.replace("/facepalm", "(－‸ლ)");
   output = output.replace("/bruh", "(ㆆ_ㆆ)");
+  output = output.replace("/cheers", "(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )");
   return output;
 }
 
