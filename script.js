@@ -213,7 +213,7 @@ function html(markdown) {
   output = output.replace("/shrug", "&macr;\\_(ツ)_/&macr; ");
   output = output.replace("/tableflip", "┬─┬ノ( º _ ºノ) ");
   output = output.replace("/eyes", "( ಠ ͜ʖ ಠ ) ");
-  output = output.replace("/confused", "( ͡❛ ⍨ ͡❛)");
+  output = output.replace("/bye", "ʕ•́ᴥ•̀ʔっ");
   output = output.replace("/facepalm", "(－‸ლ)");
   return output;
 }
