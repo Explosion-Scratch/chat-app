@@ -217,6 +217,11 @@ function html(markdown) {
   output = output.replace("/facepalm", "(－‸ლ)");
   output = output.replace("/bruh", "(ㆆ_ㆆ)");
   output = output.replace("/cheers", "(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )");
+  output = output.replace("/infinite", "∞");
+  output = output.replace(
+    "/lol",
+    "\r\n\u256D\u256E\u2571\u2571\u2571\u256D\u256E\r\n\u2503\u2503\u2571\u2571\u2571\u2503\u2503\r\n\u2503\u2503\u256D\u2501\u2501\u252B\u2503\r\n\u2503\u2503\u2503\u256D\u256E\u2503\u2503\r\n\u2503\u2570\u252B\u2570\u256F\u2503\u2570\u256E\r\n\u2570\u2501\u253B\u2501\u2501\u253B\u2501\u256F"
+  );
   return output;
 }
 
