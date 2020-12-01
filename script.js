@@ -212,7 +212,8 @@
 
     showdown.setFlavor("github");
     var output = converter.makeHtml(markdown);
-
+    output = output.replace("/shrug", "&macr;\\_(ツ)_/&macr; ");
+    output = output.replace("/tableflip", "┬─┬ノ( º _ ºノ) ");
     return output;
   }
 
