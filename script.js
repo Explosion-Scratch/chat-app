@@ -59,10 +59,18 @@ firebase
     if (snapshot.val().sender !== myName && windowtime > 2000) {
       playsound();
     }
-    if (windowtime < 4000) {
-      document
-        .getElementById("messages")
-        .scrollTo(0, document.getElementById("messages").scrollHeight);
+    document
+      .getElementById("messages")
+      .scrollTo(0, document.getElementById("messages").scrollHeight);
+
+    if (
+      snapshot.val().sender !== myName &&
+      snapshot.val().message.includes("@" + myName) &&
+      windowtime > 4000
+    ) {
+      playsound(
+        "https://proxy.notificationsounds.com/notification-sounds/undeniable-575/download/file-sounds-1122-undeniable.mp3"
+      );
     }
     // Add them
     var html = "";
@@ -82,9 +90,8 @@ firebase
     }
     html +=
       "</span><span id='message-text'>" + snapshot.val().message + "</span>";
-    html += `<span id='message-date' data-date='${
-      snapshot.val().time
-    }'></span><span id='quote' onclick='quote(this)'>Quote</span>`;
+    html += `<span id='message-date' data-date='${snapshot.val().time
+      }'></span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("messages").innerHTML += html;
 
     if (snapshot.val().sender == myName) {
@@ -103,8 +110,9 @@ function deleteMessage(self) {
   ) {
     // Message id
     var id = self.getAttribute("data-id");
-
     // Delete
+    self.parentElement.parentElement.querySelector("#quote").remove();
+
     firebase.database().ref(myChannel).child(id).remove();
   }
 }
@@ -132,11 +140,10 @@ firebase
       html += "Delete";
       html += "</button>";
     }
-    html += `</span><span id='message-text'>${
-      snapshot.val().message
-    }</span><span id='message-date'>${formatted_date(
-      snapshot.val().time
-    )}</span><span id='quote' onclick='quote(this)'>Quote</span>`;
+    html += `</span><span id='message-text'>${snapshot.val().message
+      }</span><span id='message-date'>${formatted_date(
+        snapshot.val().time
+      )}</span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("message-" + snapshot.key).innerHTML = html;
 
     // Highligh
@@ -243,13 +250,15 @@ setInterval(() => {
   // Update the title
   if (document.querySelectorAll("li").length > unread) {
     // If there are unread messages
-    document.title = `(${
-      document.querySelectorAll("li").length - unread
-    }) Chat App`;
+    document.title = `(${document.querySelectorAll("li").length - unread
+      }) Chat App`;
   } else {
     // If there aren't
     document.title = "Chat App";
   }
+
+  // Update name thing at the top
+  document.getElementById("me").innerText = `Sending messages as ${myName}`;
 }, 50);
 
 // Unread messages in the header
@@ -327,6 +336,7 @@ function highlight() {
   });
 }
 function updatemessage(thing) {
+  thing.focus();
   if (
     thing
       .querySelector("#message-sender")
@@ -360,12 +370,8 @@ function update(message, newtext) {
 
 // Quote
 function quote(el) {
-  document.getElementById(
-    "message"
-  ).value += `>${el.parentElement
-    .querySelector("#message-sender")
-    .innerText.replace("Delete", "")
-    .replace("\n", "")} wrote: \\n${
-    el.parentElement.querySelector("#message-text").innerText
-  }`;
+  document.getElementById("message").value += `>${el.parentElement.querySelector("#message-text").innerText
+    }`;
 }
+
+var app = new Vue({ el: "body" });
