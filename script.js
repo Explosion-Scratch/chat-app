@@ -221,6 +221,7 @@ function html(markdown) {
   output = output.replace(/\/lol/g, "🇱​​​​​🇴​​​​​🇱");
   output = output.replace(/\/fancy/g, "**•.¸♥¸.•*");
   output = output.replace(/\\n/g, "<br>");
+  output = output.replace(/\\t/g, "  ");
   return output;
 }
 
