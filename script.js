@@ -210,18 +210,19 @@ function html(markdown) {
 
   showdown.setFlavor("github");
   var output = converter.makeHtml(markdown);
-  output = output.replace("/shrug", "&macr;\\_(ツ)_/&macr; ");
-  output = output.replace("/tableflip", "┬─┬ノ( º _ ºノ) ");
-  output = output.replace("/eyes", "( ಠ ͜ʖ ಠ ) ");
-  output = output.replace("/bye", "ʕ•́ᴥ•̀ʔっ");
-  output = output.replace("/facepalm", "(－‸ლ)");
-  output = output.replace("/bruh", "(ㆆ_ㆆ)");
-  output = output.replace("/cheers", "(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )");
-  output = output.replace("/infinite", "∞");
+  output = output.replace(/\/shrug/g, "&macr;\\_(ツ)_/&macr; ");
+  output = output.replace(/\/tableflip/g, "┬─┬ノ( º _ ºノ) ");
+  output = output.replace(/\/eyes/g, "( ಠ ͜ʖ ಠ ) ");
+  output = output.replace(/\/bye/g, "ʕ•́ᴥ•̀ʔっ");
+  output = output.replace(/\/facepalm/g, "(－‸ლ)");
+  output = output.replace(/\/bruh/g, "(ㆆ_ㆆ)");
+  output = output.replace(/\/cheers/g, "(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )");
+  output = output.replace(/\/infinite/g, "∞");
   output = output.replace(
-    "/lol",
+    /\/lol/g,
     "\r\n\u256D\u256E\u2571\u2571\u2571\u256D\u256E\r\n\u2503\u2503\u2571\u2571\u2571\u2503\u2503\r\n\u2503\u2503\u256D\u2501\u2501\u252B\u2503\r\n\u2503\u2503\u2503\u256D\u256E\u2503\u2503\r\n\u2503\u2570\u252B\u2570\u256F\u2503\u2570\u256E\r\n\u2570\u2501\u253B\u2501\u2501\u253B\u2501\u256F"
   );
+  output = output.replace(/\/fancy/g, "**•.¸♥¸.•*");
   return output;
 }
 
