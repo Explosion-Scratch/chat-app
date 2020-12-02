@@ -59,10 +59,15 @@ firebase
     if (snapshot.val().sender !== myName && windowtime > 2000) {
       playsound();
     }
+    if (windowtime < 4000) {
+      document
+        .getElementById("messages")
+        .scrollTo(0, document.getElementById("messages").scrollHeight);
+    }
     // Add them
     var html = "";
     html +=
-      "<li data-channel='" +
+      "<li onclick='updatemessage(this)' data-channel='" +
       snapshot.val().channel +
       "'id='message-" +
       snapshot.key +
@@ -77,8 +82,9 @@ firebase
     }
     html +=
       "</span><span id='message-text'>" + snapshot.val().message + "</span>";
-    html += `<span id='message-date' data-date='${snapshot.val().time
-      }'></span>`;
+    html += `<span id='message-date' data-date='${
+      snapshot.val().time
+    }'></span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("messages").innerHTML += html;
 
     if (snapshot.val().sender == myName) {
@@ -111,6 +117,7 @@ firebase
     document.querySelector(
       `#${"message-" + snapshot.key} #message-text`
     ).innerHTML = "<i>Deleted</i>";
+    document.querySelector(`#${"message-" + snapshot.key} button`).remove();
   });
 
 // Update on message edit
@@ -118,8 +125,18 @@ firebase
   .database()
   .ref(myChannel)
   .on("child_changed", function (snapshot) {
-    var html = `<span id='message-sender'>${snapshot.val().sender
-      }</span><span id='message-text'>${snapshot.val().message}</span>`;
+    var html = `<span id='message-sender'>${snapshot.val().sender}`;
+    if (snapshot.val().sender == myName) {
+      html +=
+        "<button onclick='deleteMessage(this)' data-id='" + snapshot.key + "'>";
+      html += "Delete";
+      html += "</button>";
+    }
+    html += `</span><span id='message-text'>${
+      snapshot.val().message
+    }</span><span id='message-date'>${formatted_date(
+      snapshot.val().time
+    )}</span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("message-" + snapshot.key).innerHTML = html;
 
     // Highligh
@@ -160,6 +177,7 @@ function formatted_date(date) {
   }
   output = output + " ago";
   output = output.replace(/^-30 seconds ago/, "Just now");
+  output = output.replace(/^50 years ago/, "Just now");
   output = output.replace(/^0 seconds ago/, "Just now");
   output = output.replace(/^30 seconds ago/, "Less than a minute ago");
   output = output.replace(/^60 seconds ago/, "1 minute ago");
@@ -178,18 +196,31 @@ function escape(unsafe) {
     .replace(/'/g, "&#039;");
 }
 function promptuser() {
-  var promptinput = prompt("What do you want to be called?");
-  while (promptinput == null || promptinput == "") {
-    promptinput = prompt(
-      "Sorry, you must enter a value, what would you like to be called?"
-    );
+  if (window.localStorage.getItem("user") == null) {
+    var promptinput = prompt("What do you want to be called?");
+    while (promptinput == null || promptinput == "") {
+      promptinput = prompt(
+        "Sorry, you must enter a value, what would you like to be called?"
+      );
+    }
+    window.localStorage.setItem("user", promptinput.trim().replace(/\s/g, ""));
+  } else {
+    var promptinput = window.localStorage.getItem("user");
   }
-  myChannel = prompt("What channel do you want to be in?");
-  // Regex for prompt
-  while (!/^[a-zA-Z\d]*$/.test(myChannel)) {
-    myChannel = prompt(
-      "What channel do you want to be in? (ANswer must be only letters and numbers, no spaces)"
-    );
+  var channelurl = window.location.search;
+  channelurl = new URLSearchParams(channelurl);
+  channelurl = channelurl.get("channel");
+
+  if (channelurl == null) {
+    myChannel = prompt("What channel do you want to be in?");
+    // Regex for prompt
+    while (!/^[a-zA-Z\d]*$/.test(myChannel)) {
+      myChannel = prompt(
+        "What channel do you want to be in? (ANswer must be only letters and numbers, no spaces)"
+      );
+    }
+  } else {
+    myChannel = channelurl;
   }
   return promptinput.trim().replace(/\s/g, "");
 }
@@ -212,8 +243,9 @@ setInterval(() => {
   // Update the title
   if (document.querySelectorAll("li").length > unread) {
     // If there are unread messages
-    document.title = `(${document.querySelectorAll("li").length - unread
-      }) Chat App`;
+    document.title = `(${
+      document.querySelectorAll("li").length - unread
+    }) Chat App`;
   } else {
     // If there aren't
     document.title = "Chat App";
@@ -293,4 +325,47 @@ function highlight() {
   document.querySelectorAll("code").forEach((block) => {
     hljs.highlightBlock(block);
   });
+}
+function updatemessage(thing) {
+  if (
+    thing
+      .querySelector("#message-sender")
+      .innerText.replace("Delete", "")
+      .replace("\n", "") === myName
+  ) {
+    var messageid = thing.id.replace(/^message-/, "");
+    thing
+      .querySelector("#message-text")
+      .setAttribute("contenteditable", "true");
+    thing.querySelector("#message-text").onblur = (e) => {
+      thing
+        .querySelector("#message-text")
+        .setAttribute("contenteditable", "false");
+      update(messageid, thing.querySelector("#message-text").innerText);
+    };
+  }
+}
+function update(message, newtext) {
+  firebase
+    .database()
+    .ref(myChannel)
+    .child(message)
+    .update({
+      sender: escape(myName),
+      message: HtmlSanitizer.SanitizeHtml(html(emotes(newtext))),
+      time: time(),
+      channel: myChannel
+    });
+}
+
+// Quote
+function quote(el) {
+  document.getElementById(
+    "message"
+  ).value += `>${el.parentElement
+    .querySelector("#message-sender")
+    .innerText.replace("Delete", "")
+    .replace("\n", "")} wrote: \\n${
+    el.parentElement.querySelector("#message-text").innerText
+  }`;
 }

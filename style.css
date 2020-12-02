@@ -184,7 +184,14 @@ code {
   font-size: 20px;
   cursor: pointer;
 }
-
+blockquote {
+  border-left: 4px solid lightblue;
+  padding: 5px;
+}
+blockquote #quote-author {
+  display: block;
+  color: lightgreen;
+}
 /* Highlight JS */
 /* github.com style (c) Vasily Polovnyov <vast@whiteants.net> */
 [class^="hljs"] {
@@ -195,8 +202,7 @@ code {
   overflow-x: auto;
   padding: 0.5em;
   color: #333;
-  border-radius: 5px;
-  background: #fffb;
+  background: #fff;
 }
 .hljs-comment,
 .hljs-quote {
@@ -267,4 +273,11 @@ code {
 }
 .hljs-strong {
   font-weight: bold;
+}
+#quote {
+  font-size: 10px;
+  color: lightblue;
+  text-decoration: underline;
+  cursor: pointer;
+  display: inline;
 }
