@@ -220,6 +220,7 @@ function html(markdown) {
   output = output.replace(/\/infinite/g, "∞");
   output = output.replace(/\/lol/g, "🇱​​​​​🇴​​​​​🇱");
   output = output.replace(/\/fancy/g, "**•.¸♥¸.•*");
+  output = output.replace(/\\n/g, "<br>");
   return output;
 }
 
