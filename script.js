@@ -27,7 +27,7 @@ function sendMessage() {
         .push()
         .set({
           sender: escape(myName),
-          message: HtmlSanitizer.SanitizeHtml(html(message)),
+          message: HtmlSanitizer.SanitizeHtml(html(emotes(message))),
           time: time()
         });
       // Prevent submit;
@@ -210,6 +210,10 @@ function html(markdown) {
 
   showdown.setFlavor("github");
   var output = converter.makeHtml(markdown);
+  return output;
+}
+function emotes(str) {
+  var output = str;
   output = output.replace(/\/shrug/g, "&macr;\\_(ツ)_/&macr; ");
   output = output.replace(/\/tableflip/g, "┬─┬ノ( º _ ºノ) ");
   output = output.replace(/\/eyes/g, "( ಠ ͜ʖ ಠ ) ");
@@ -224,7 +228,6 @@ function html(markdown) {
   output = output.replace(/\\t/g, "  ");
   return output;
 }
-
 function playsound(
   url = "https://proxy.notificationsounds.com/notification-sounds/me-too-603/download/file-sounds-1144-me-too.mp3"
 ) {
