@@ -218,10 +218,7 @@ function html(markdown) {
   output = output.replace(/\/bruh/g, "(ㆆ_ㆆ)");
   output = output.replace(/\/cheers/g, "(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )");
   output = output.replace(/\/infinite/g, "∞");
-  output = output.replace(
-    /\/lol/g,
-    "\u2554\u2557\u2554\u2550\u2566\u2557\r\n\u2551\u255A\u2563\u256C\u2551\u255A\u2557\r\n\u255A\u2550\u2569\u2550\u2569\u2550\u255D"
-  );
+  output = output.replace(/\/lol/g, "🇱​​​​​🇴​​​​​🇱");
   output = output.replace(/\/fancy/g, "**•.¸♥¸.•*");
   return output;
 }
