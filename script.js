@@ -220,7 +220,7 @@ function html(markdown) {
   output = output.replace(/\/infinite/g, "∞");
   output = output.replace(
     /\/lol/g,
-    "\r\n\u256D\u256E\u2571\u2571\u2571\u256D\u256E\r\n\u2503\u2503\u2571\u2571\u2571\u2503\u2503\r\n\u2503\u2503\u256D\u2501\u2501\u252B\u2503\r\n\u2503\u2503\u2503\u256D\u256E\u2503\u2503\r\n\u2503\u2570\u252B\u2570\u256F\u2503\u2570\u256E\r\n\u2570\u2501\u253B\u2501\u2501\u253B\u2501\u256F"
+    "\u2554\u2557\u2554\u2550\u2566\u2557\r\n\u2551\u255A\u2563\u256C\u2551\u255A\u2557\r\n\u255A\u2550\u2569\u2550\u2569\u2550\u255D"
   );
   output = output.replace(/\/fancy/g, "**•.¸♥¸.•*");
   return output;
