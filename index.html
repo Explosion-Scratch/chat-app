@@ -1,51 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"
-      integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw=="
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://cdn.jsdelivr.net/gh/jitbit/HtmlSanitizer@master/HtmlSanitizer.js"></script>
-    <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
-    <script src="script.js"></script>
-    <link rel="stylesheet" href="style.css" />
-    <title>Chat app</title>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Banner -->
-      <div class="banner">
-        <h3>
-          <h2>
-            Chaty
-          </h2>
-        </h3>
-      </div>
-      <!-- List -->
-      <ul id="messages"></ul>
-      <!-- Form -->
-      <form onsubmit="sendMessage(); return false">
-        <input
-          type="text"
-          placeholder="Enter message"
-          id="message"
-          autocomplete="off"
-        />
-        <!-- <button type="submit">Send</button> -->
-      </form>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"
+    integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw=="
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jitbit/HtmlSanitizer@master/HtmlSanitizer.js"></script>
+  <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+  <script src="script.js"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.0/styles/default.min.css" />
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.0/highlight.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+  <title>Chat app</title>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Banner -->
+    <div class="banner">
+      <h3>
+        <h2>
+          Chaty
+        </h2>
+      </h3>
     </div>
-    <button onclick="fullscreen()" id="fullscreen">
-      <span
-        class="iconify"
-        data-icon="octicon:screen-full-16"
-        data-inline="false"
-      ></span>
-    </button>
-  </body>
+    <!-- List -->
+    <ul id="messages"></ul>
+    <!-- Form -->
+    <form onsubmit="sendMessage(); return false">
+      <input type="text" placeholder="Enter message" id="message" autocomplete="off" />
+      <!-- <button type="submit">Send</button> -->
+    </form>
+  </div>
+  <button onclick="fullscreen()" id="fullscreen">
+    <span class="iconify" data-icon="octicon:screen-full-16" data-inline="false"></span>
+  </button>
+</body>
+
 </html>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>

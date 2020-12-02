@@ -1,5 +1,16 @@
-var timer = 0;
+/* ////////////////////////////////////////// */
+/* //////////////////Credits///////////////// */
+/* ////////////////////////////////////////// */
+/*------------------------------------------- */
+// Many thanks to GrahamSH-LLK for a TON of help with this project. He helped make this more secure from XSS attacks, he also helped implement markdown, and he gave me general advice on this project. Go follow him!
+/* ------------------------------------------ */
+// Thanks also goes to the many testers of this project, such as ahmeti, Ani-Xan, wgyt and many more.
+//   --Explosion--
+
+// © 2020 --Explosion--, All rights reserved
+
 var windowtime = 0;
+var myChannel = "";
 var firebaseConfig = {
   apiKey: "AIzaSyCGO99iGzMYFTQZC0p1e_PJdaXw9cIifDw",
   authDomain: "test-project-30164.firebaseapp.com",
@@ -15,34 +26,27 @@ firebase.initializeApp(firebaseConfig);
 var myName = promptuser();
 
 function sendMessage() {
-  if (timer > 2000) {
-    timer = 0;
-    unread = document.querySelectorAll("li").length + 1;
-    var message = document.getElementById("message").value;
-    if (message != "") {
-      // Save in DB
-      firebase
-        .database()
-        .ref("messages")
-        .push()
-        .set({
-          sender: escape(myName),
-          message: HtmlSanitizer.SanitizeHtml(html(emotes(message))),
-          time: time()
-        });
-      // Prevent submit;
-      document.getElementById("message").value = "";
-      document
-        .getElementById("messages")
-        .scrollTo(0, document.getElementById("messages").scrollHeight);
-    } else {
-      alert("Please enter a value");
-    }
+  unread = document.querySelectorAll("li").length + 1;
+  var message = document.getElementById("message").value;
+  if (message != "") {
+    // Save in DB
+    firebase
+      .database()
+      .ref(myChannel)
+      .push()
+      .set({
+        sender: escape(myName),
+        message: HtmlSanitizer.SanitizeHtml(html(emotes(message))),
+        time: time(),
+        channel: myChannel
+      });
+    // Prevent submit;
+    document.getElementById("message").value = "";
+    document
+      .getElementById("messages")
+      .scrollTo(0, document.getElementById("messages").scrollHeight);
   } else {
-    playsound(
-      "https://proxy.notificationsounds.com/notification-sounds/unsure-566/download/file-sounds-1114-unsure.mp3"
-    );
-    alert("You must wait 2 seconds between messages");
+    alert("Please enter a value");
   }
   return false;
 }
@@ -50,13 +54,19 @@ function sendMessage() {
 // Listen for incoming messages
 firebase
   .database()
-  .ref("messages")
+  .ref(myChannel)
   .on("child_added", function (snapshot) {
     if (snapshot.val().sender !== myName && windowtime > 2000) {
       playsound();
     }
+    // Add them
     var html = "";
-    html += "<li id='message-" + snapshot.key + "'>";
+    html +=
+      "<li data-channel='" +
+      snapshot.val().channel +
+      "'id='message-" +
+      snapshot.key +
+      "'>";
     html += "<span id='message-sender'>" + snapshot.val().sender;
     // Delete btn
     if (snapshot.val().sender == myName) {
@@ -67,17 +77,16 @@ firebase
     }
     html +=
       "</span><span id='message-text'>" + snapshot.val().message + "</span>";
-    html += `<span id='message-date' data-date='${
-      snapshot.val().time
-    }'></span>`;
+    html += `<span id='message-date' data-date='${snapshot.val().time
+      }'></span>`;
     document.getElementById("messages").innerHTML += html;
-    document
-      .getElementById("messages")
-      .scrollTo(0, document.getElementById("messages").scrollHeight);
 
     if (snapshot.val().sender == myName) {
       document.getElementById("message-" + snapshot.key).classList.add("me");
     }
+
+    // Highlight
+    highlight();
   });
 
 function deleteMessage(self) {
@@ -90,36 +99,41 @@ function deleteMessage(self) {
     var id = self.getAttribute("data-id");
 
     // Delete
-    firebase.database().ref("messages").child(id).remove();
+    firebase.database().ref(myChannel).child(id).remove();
   }
 }
 
 // Listener
 firebase
   .database()
-  .ref("messages")
+  .ref(myChannel)
   .on("child_removed", function (snapshot) {
     document.querySelector(
       `#${"message-" + snapshot.key} #message-text`
     ).innerHTML = "<i>Deleted</i>";
   });
 
+// Update on message edit
 firebase
   .database()
-  .ref("messages")
+  .ref(myChannel)
   .on("child_changed", function (snapshot) {
-    var html = `<span id='message-sender'>${
-      snapshot.val().sender
-    }</span><span id='message-text'>${snapshot.val().message}</span>`;
+    var html = `<span id='message-sender'>${snapshot.val().sender
+      }</span><span id='message-text'>${snapshot.val().message}</span>`;
     document.getElementById("message-" + snapshot.key).innerHTML = html;
+
+    // Highligh
+    highlight();
   });
 
 function time() {
+  // Get seconds
   return Date.now();
 }
 function formatted_date(date) {
   var output = date_thing(date);
   function date_thing(date) {
+    // Universal time
     var seconds = Math.floor((new Date() - date) / 1000);
     var interval = seconds / 31536000;
 
@@ -145,9 +159,14 @@ function formatted_date(date) {
     return Math.floor(seconds / 30) * 30 + " seconds";
   }
   output = output + " ago";
+  output = output.replace(/^-30 seconds ago/, "Just now");
   output = output.replace(/^0 seconds ago/, "Just now");
+  output = output.replace(/^30 seconds ago/, "Less than a minute ago");
   output = output.replace(/^60 seconds ago/, "1 minute ago");
   output = output.replace(/^1 minutes ago/, "1 minute ago");
+  output = output.replace(/^1 days ago/, "1 day ago");
+  output = output.replace(/^1 months ago/, "1 month ago");
+  output = output.replace(/^1 years ago/, "1 year ago");
   return output;
 }
 function escape(unsafe) {
@@ -165,6 +184,13 @@ function promptuser() {
       "Sorry, you must enter a value, what would you like to be called?"
     );
   }
+  myChannel = prompt("What channel do you want to be in?");
+  // Regex for prompt
+  while (!/^[a-zA-Z\d]*$/.test(myChannel)) {
+    myChannel = prompt(
+      "What channel do you want to be in? (ANswer must be only letters and numbers, no spaces)"
+    );
+  }
   return promptinput.trim().replace(/\s/g, "");
 }
 var unread = null;
@@ -174,21 +200,27 @@ window.onblur = function () {
 window.onfocus = function () {
   unread = document.querySelectorAll("li").length;
 };
+
+// Stuff that needs to be running constantly
 setInterval(() => {
+  // Update the dates on messages
   updatedates();
-  timer = timer + 50;
+  // After the use has entered their name increment this timer, which makes the sound not play when messages load
   if (myName != null) {
     windowtime += 50;
   }
+  // Update the title
   if (document.querySelectorAll("li").length > unread) {
-    document.title = `(${
-      document.querySelectorAll("li").length - unread
-    }) Chat App`;
+    // If there are unread messages
+    document.title = `(${document.querySelectorAll("li").length - unread
+      }) Chat App`;
   } else {
+    // If there aren't
     document.title = "Chat App";
   }
 }, 50);
 
+// Unread messages in the header
 document.addEventListener("mousemove", (e) => {
   unread = document.querySelectorAll("li").length;
 });
@@ -198,24 +230,34 @@ document.addEventListener("mousedown", (e) => {
 document.addEventListener("keydown", (e) => {
   unread = document.querySelectorAll("li").length;
 });
+
+// Fullscreen mode
 function fullscreen() {
   document.documentElement.requestFullscreen();
 }
+
+// Markdown to HTML with options
 function html(markdown) {
+  // Thanks to @GrahamSH-LLK for helping with this
   var converter = new showdown.Converter({
     backslashEscapesHTMLTags: true,
     simplifiedAutoLink: true,
     tables: true
   });
 
+  // GitHub like markdown
   showdown.setFlavor("github");
+  // Finally actually use markdown
   var output = converter.makeHtml(markdown);
   return output;
 }
+
+// Replace certain strings
 function emotes(str) {
   var output = str;
-  output = output.replace(/\/shrug/g, "&macr;\\_(ツ)_/&macr; ");
-  output = output.replace(/\/tableflip/g, "┬─┬ノ( º _ ºノ) ");
+  output = output.replace(/\/shrug/g, "&macr;&#92;_(ツ)_/&macr; ");
+  output = output.replace(/\/tableflip/g, "(╯°□°）╯︵ ┻━┻");
+  output = output.replace(/\/unflip/g, "┬─┬ ノ( ゜-゜ノ)");
   output = output.replace(/\/eyes/g, "( ಠ ͜ʖ ಠ ) ");
   output = output.replace(/\/bye/g, "ʕ•́ᴥ•̀ʔっ");
   output = output.replace(/\/facepalm/g, "(－‸ლ)");
@@ -223,22 +265,32 @@ function emotes(str) {
   output = output.replace(/\/cheers/g, "(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )");
   output = output.replace(/\/infinite/g, "∞");
   output = output.replace(/\/lol/g, "🇱​​​​​🇴​​​​​🇱");
+  output = output.replace(/\/imposter/g, "ඞඞ");
   output = output.replace(/\/fancy/g, "**•.¸♥¸.•*");
-  output = output.replace(/\\n/g, "<br>");
+  // This one is actually usefull for making line breaks
+  output = output.replace(/\\n/g, "\n");
   output = output.replace(/\\t/g, "  ");
   return output;
 }
 function playsound(
   url = "https://proxy.notificationsounds.com/notification-sounds/me-too-603/download/file-sounds-1144-me-too.mp3"
 ) {
+  // Play the sound, if no argument is given play the message sound.
   var audio = new Audio(url);
   audio.play();
 }
 
 function updatedates() {
+  // This function runs through all the list items and updates the date on them.
   var dates = document.querySelectorAll("ul li span#message-date");
   for (let i = 0; i < dates.length; i++) {
     const el = dates[i];
     el.innerText = formatted_date(el.getAttribute("data-date"));
   }
+}
+
+function highlight() {
+  document.querySelectorAll("code").forEach((block) => {
+    hljs.highlightBlock(block);
+  });
 }
