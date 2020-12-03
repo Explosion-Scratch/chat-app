@@ -4,23 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <!-- Firebase stuff -->
     <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
+
+    <!-- Showdown, markdown to html and back -->
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"
       integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw=="
       crossorigin="anonymous"
     ></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jitbit/HtmlSanitizer@master/HtmlSanitizer.js"></script>
-    <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
-    <script src="script.js"></script>
-    <link
-      rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.0/styles/default.min.css"
-    />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.4.0/highlight.min.js"></script>
 
+    <!-- Sanitize HTML -->
+    <script src="https://cdn.jsdelivr.net/gh/jitbit/HtmlSanitizer@master/HtmlSanitizer.js"></script>
+
+    <!-- Iconify, for icons -->
+    <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+    <script defer src="script.js"></script>
+
+    <!-- Main stylesheet -->
     <link rel="stylesheet" href="style.css" />
     <title>Chat app</title>
   </head>
@@ -31,7 +34,7 @@
       <div class="banner">
         <h2>
           Chatify
-          <span id="me">Sending messages as Explosion</span>
+          <span id="me">Sending messages as in </span>
         </h2>
       </div>
       <!-- List -->
@@ -54,9 +57,75 @@
         data-inline="false"
       ></span>
     </button>
+    <button onclick="signout()" id="signout">
+      <span
+        class="iconify"
+        data-icon="ph:sign-out-bold"
+        data-inline="false"
+      ></span>
+    </button>
   </body>
 </html>
 <script>
   hljs.initHighlightingOnLoad();
 </script>
-<script></script>
+<script>
+  window.onmousemove = (e) => {
+    clicktarget = e.target.parentElement.parentElement;
+  };
+</script>
+<script>
+  function signout() {
+    window.localStorage.removeItem("user");
+    window.location.reload();
+    removeuser(myName);
+  }
+</script>
+<script>
+  // User auth
+
+  var users = [];
+  var ids = [];
+
+  firebase
+    .database()
+    .ref("users")
+    .on("child_added", function (snapshot) {
+      users.push(snapshot.val().user);
+      ids.push(snapshot.key);
+    });
+
+  firebase
+    .database()
+    .ref("users")
+    .on("child_removed", function (snapshot) {
+      users = removeitem(snapshot.val().user, users);
+      ids = removeitem(snapshot.key, ids);
+    });
+
+  function adduser(user) {
+    if (!users.includes(user))
+      firebase.database().ref("users").push().set({ user: user });
+  }
+
+  function removeuser(user) {
+    firebase.database().ref("users").child(ids[users.indexOf(user)]).remove();
+  }
+
+  function userexists(user) {
+    if (users.includes(user)) {
+      return true;
+    } else {
+      adduser(user);
+      return false;
+    }
+  }
+  function removeitem(item, array) {
+    var index = array.indexOf(item);
+
+    if (index > -1) {
+      array.splice(index, 1);
+    }
+    return array;
+  }
+</script>
