@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+  <script src="script.js"></script>
+  <title>Chatify</title>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Banner -->
+    <div class="banner">
+      <h2>
+        Chatify
+      </h2>
+    </div>
+    <div class="text">
+      <h2>Settings</h2>
+      <div class="settings">
+        <div class="input"><input type="checkbox" name='sounds' checked><label for="sounds">Sounds</label></div>
+        <div class="input"><input type="checkbox" name='showtyping' checked><label for="showtyping">Show me
+            typing</label></div>
+        <div class="input"><input type="checkbox" name="leavejoin" checked><label for="leavejoin">Show me leaving and
+            joining</label></div>
+      </div>
+      <a href="home.html">Back to home</a>
+    </div>
+  </div>
+  <button onclick="fullscreen()" id="fullscreen">
+    <span class="iconify" data-icon="octicon:screen-full-16" data-inline="false"></span>
+  </button>
+  </button>
+</body>
+
+</html>
+<style>
+  :root {
+    --slider-size: .6px;
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+  }
+
+  .text h2 {
+    text-align: center;
+  }
+
+  input[type='checkbox'] {
+    margin-right: 10px;
+  }
+
+  .text a {
+    transition: background-color .4s ease;
+    letter-spacing: 2px;
+    background: rgb(118, 184, 206);
+    padding: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin: 5px;
+    color: white;
+  }
+
+  .text a:hover {
+    background-color: rgb(112, 214, 112);
+  }
+</style>
+<script>
+  set('sounds');
+  set('leavejoin');
+  set('showtyping');
+  setInterval(() => {
+    window.localStorage.setItem('settings-visited', 'true')
+    window.localStorage.setItem('sounds', document.getElementsByName('sounds')[0].checked)
+    window.localStorage.setItem('showtyping', document.getElementsByName('showtyping')[0].checked)
+    window.localStorage.setItem('leavejoin', document.getElementsByName('leavejoin')[0].checked)
+  }, (10));
+
+  function set(item) {
+    if (window.localStorage.getItem(item) === null) {
+      window.localStorage.setItem(item, 'true');
+    }
+    document.getElementsByName(item)[0].checked = tof(window.localStorage.getItem(item));
+  }
+
+  function tof(str) {
+    if (str == 'true') {
+      return true
+    } else {
+      return false
+    }
+  }
+</script>
