@@ -30,11 +30,11 @@ function sendMessage() {
     // Save in DB
     firebase
       .database()
-      .ref("chanl" + myChannel)
+      .ref("channel-" + myChannel)
       .push()
       .set({
         sender: escape(myName),
-        message: HtmlSanitizer.SanitizeHtml(html(emotes(message))),
+        message: HtmlSanitizer.SanitizeHtml(html(emotes(emojisfrom(message)))),
         time: time(),
         channel: myChannel
       });
@@ -48,7 +48,21 @@ function sendMessage() {
   }
   return false;
 }
-// User auth
+function system_msg(message) {
+  firebase
+    .database()
+    .ref("channel-" + myChannel)
+    .push()
+    .set({
+      sender: "𝘚𝘠𝘚𝘛𝘌𝘔",
+      message: HtmlSanitizer.SanitizeHtml(
+        html(emotes(emojisfrom(`*${message}*`)))
+      ),
+      time: time(),
+      channel: myChannel,
+      system: true
+    });
+}
 // User auth
 
 var users = [];
@@ -95,6 +109,9 @@ function removeitem(item, array) {
   return array;
 }
 // Get user input
+if (window.localStorage.getItem("fromhome") == null) {
+  window.location.pathname = "/home.html";
+}
 var myName = promptuser();
 setTimeout(function () {
   if (userexists(myName) && window.localStorage.getItem("user") == null) {
@@ -102,22 +119,24 @@ setTimeout(function () {
   } else {
     adduser(myName);
   }
+  system_msg(`${myName} joined the chat`);
 }, 2000);
 
 // Listen for incoming messages
 firebase
   .database()
-  .ref("chanl" + myChannel)
+  .ref("channel-" + myChannel)
   .on("child_added", function (snapshot) {
-    if (snapshot.val().sender !== myName && windowtime > 2000) {
+    if (
+      snapshot.val().sender !== myName &&
+      windowtime > 2000 &&
+      snapshot.val().channel === myChannel &&
+      !snapshot.val().message.includes("@" + myName)
+    ) {
       playsound();
     }
 
-    if (
-      snapshot.val().sender !== myName &&
-      snapshot.val().message.includes("@" + myName) &&
-      windowtime > 4000
-    ) {
+    if (snapshot.val().message.includes("@" + myName) && windowtime > 4000) {
       playsound(
         "https://proxy.notificationsounds.com/notification-sounds/undeniable-575/download/file-sounds-1122-undeniable.mp3"
       );
@@ -144,7 +163,11 @@ firebase
       snapshot.val().time
     }'></span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("messages").innerHTML += html;
-
+    if (snapshot.val().system) {
+      document
+        .getElementById("message-" + snapshot.key)
+        .classList.add("system");
+    }
     if (snapshot.val().sender == myName) {
       document.getElementById("message-" + snapshot.key).classList.add("me");
     }
@@ -166,7 +189,7 @@ function deleteMessage(self) {
 
     firebase
       .database()
-      .ref("chanl" + myChannel)
+      .ref("channel-" + myChannel)
       .child(id)
       .remove();
   }
@@ -175,7 +198,7 @@ function deleteMessage(self) {
 // Listener
 firebase
   .database()
-  .ref("chanl" + myChannel)
+  .ref("channel-" + myChannel)
   .on("child_removed", function (snapshot) {
     document.querySelector(
       `#${"message-" + snapshot.key} #message-text`
@@ -190,7 +213,7 @@ firebase
 // Update on message edit
 firebase
   .database()
-  .ref("chanl" + myChannel)
+  .ref("channel-" + myChannel)
   .on("child_changed", function (snapshot) {
     var html = `<span id='message-sender'>${snapshot.val().sender}`;
     if (snapshot.val().sender == myName) {
@@ -199,15 +222,12 @@ firebase
       html += "Delete";
       html += "</button>";
     }
-    html += `</span><span id='message-text'>${
+    html += `</span><span id='message-text'>${emojisfrom(
       snapshot.val().message
-    }</span><span id='message-date'>${formatted_date(
+    )}</span><span id='message-date'>${formatted_date(
       snapshot.val().time
     )}</span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("message-" + snapshot.key).innerHTML = html;
-
-    // Highligh
-    highlight();
   });
 
 function time() {
@@ -263,35 +283,43 @@ function escape(unsafe) {
     .replace(/'/g, "&#039;");
 }
 function promptuser() {
-  var promptinput = "";
+  if (window.localStorage.getItem("fromhome") !== null) {
+    var promptinput = "";
 
-  if (window.localStorage.getItem("user") == null) {
-    promptinput = prompt("What do you want to be called?");
+    if (window.localStorage.getItem("user") == null) {
+      promptinput = prompt("What do you want to be called?");
 
-    while (promptinput == null || promptinput === "") {
-      promptinput = prompt("Error! Try another name!");
-    }
-    window.localStorage.setItem("user", promptinput.trim().replace(/\s/g, ""));
-  } else {
-    promptinput = window.localStorage.getItem("user");
-  }
-
-  var channelurl = window.location.search;
-  channelurl = new URLSearchParams(channelurl);
-  channelurl = channelurl.get("channel");
-
-  if (channelurl == null) {
-    myChannel = prompt("What channel do you want to be in?");
-    // Regex for prompt
-    while (!/^[a-zA-Z\d]{3,20}$/.test(myChannel) || myChannel == null) {
-      myChannel = prompt(
-        "What channel do you want to be in? (Answer must be only letters and numbers, no spaces)"
+      while (promptinput == null || promptinput === "") {
+        promptinput = prompt("Error! Try another name!");
+      }
+      window.localStorage.setItem(
+        "user",
+        promptinput.trim().replace(/\s/g, "")
       );
+    } else {
+      promptinput = window.localStorage.getItem("user");
     }
-  } else {
-    myChannel = channelurl;
+
+    var channelurl = window.location.search;
+    channelurl = new URLSearchParams(channelurl);
+    channelurl = channelurl.get("channel");
+
+    if (channelurl == null) {
+      myChannel = prompt("What channel do you want to be in?");
+      // Regex for prompt
+      while (!/^[a-zA-Z\d]{0,20}$/.test(myChannel) || myChannel == null) {
+        myChannel = prompt(
+          "What channel do you want to be in? (Answer must be only letters and numbers, no spaces) Enter nothing to go to welcome."
+        );
+      }
+      if (myChannel == "") {
+        myChannel = "welcome";
+      }
+    } else {
+      myChannel = channelurl;
+    }
+    return promptinput.trim().replace(/\s/g, "");
   }
-  return promptinput.trim().replace(/\s/g, "");
 }
 var unread = null;
 window.onblur = function () {
@@ -436,7 +464,7 @@ function updatemessage(thing) {
 function update(message, newtext) {
   firebase
     .database()
-    .ref("chanl" + myChannel)
+    .ref("channel-" + myChannel)
     .child(message)
     .update({
       sender: escape(myName),
@@ -450,7 +478,7 @@ function update(message, newtext) {
 function quote(el) {
   document.getElementById("message").value += `>${
     el.parentElement.querySelector("#message-text").innerText
-  }`;
+  }\n\n`;
 }
 
 function blurdelete() {
@@ -492,3 +520,95 @@ function tomarkdown(text) {
   return output;
 }
 var clicktarget = null;
+
+function replaceaudio(text) {
+  var match = text.match(/(https|http):\/\/[\S]+.[\S]+.mp3/);
+  console.log(match);
+  playsound(match[0]);
+}
+
+// Typing
+var typing = [];
+var typingids = [];
+firebase
+  .database()
+  .ref("typing")
+  .on("child_added", function (snapshot) {
+    typing.push(snapshot.val().user);
+    typingids.push(snapshot.key);
+  });
+
+firebase
+  .database()
+  .ref("typing")
+  .on("child_removed", function (snapshot) {
+    typing = removeitem(snapshot.val().user, typing);
+    typingids = removeitem(snapshot.key, typingids);
+  });
+function addtyper(user) {
+  if (!typing.includes(user))
+    firebase
+      .database()
+      .ref("typing")
+      .push()
+      .set({ user: user, channel: myChannel });
+}
+
+function removetyper(user) {
+  firebase
+    .database()
+    .ref("typing")
+    .child(typingids[typing.indexOf(user)])
+    .remove();
+}
+window.onload = (e) => {
+  removetyper(myName);
+};
+document.getElementById("message").onfocus = (e) => {
+  addtyper(myName);
+};
+document.getElementById("message").onblur = (e) => {
+  removetyper(myName);
+};
+
+var map = {
+  ">:(": "😠",
+  "<3": "\u2764\uFE0F",
+  "</3": "\uD83D\uDC94",
+  ":D": "😁",
+  ":((": "🥺",
+  ":)": "\uD83D\uDE03",
+  ";)": "\uD83D\uDE09",
+  ":(": "\uD83D\uDE12",
+  ":p": "\uD83D\uDE1B",
+  ";p": "\uD83D\uDE1C",
+  ":'(": "\uD83D\uDE22",
+  ":')": "😂",
+  ":O": "😮",
+  ":-*": "😘",
+  ":\\": "😕",
+  ":/": "😕",
+  ">:/": "🤔",
+  "-_-": "😑",
+  "*<|:‑)": "🎅",
+  "(>_<)": "😣",
+  ">_<": "😣",
+  XD: "😆",
+  ":|": "😬"
+};
+
+function escapeSpecialChars(regex) {
+  return regex.replace(/([()[{*+.$^\\|?])/g, "\\$1");
+}
+function emojisfrom(text) {
+  var output = text;
+  for (var i in map) {
+    var regex = new RegExp(escapeSpecialChars(i), "gim");
+    output = output.replace(regex, map[i]);
+  }
+  return output;
+}
+
+window.addEventListener("beforeunload", function (e) {
+  system_msg(`${myName} disconnected`);
+});
