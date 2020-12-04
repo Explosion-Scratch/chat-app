@@ -110,7 +110,7 @@ function removeitem(item, array) {
 }
 // Get user input
 if (window.localStorage.getItem("fromhome") == null) {
-  window.location.pathname = "/home.html";
+  window.location.href = `https://explosion-scratch.github.io/chat-app/home.html`;
 }
 var myName = promptuser();
 setTimeout(function () {
