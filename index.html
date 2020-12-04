@@ -4,62 +4,157 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="style.css" />
+
+    <!-- Firebase stuff -->
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
+
+    <!-- Showdown, markdown to html and back -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"
+      integrity="sha512-L03kznCrNOfVxOUovR6ESfCz9Gfny7gihUX/huVbQB9zjODtYpxaVtIaAkpetoiyV2eqWbvxMH9fiSv5enX7bw=="
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Sanitize HTML -->
+    <script src="https://cdn.jsdelivr.net/gh/jitbit/HtmlSanitizer@master/HtmlSanitizer.js"></script>
+
+    <!-- Iconify, for icons -->
     <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
-    <script src="script.js"></script>
-    <title>Chatify</title>
+    <script defer src="script.js"></script>
+
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="style.css" />
+    <title>Chat app</title>
   </head>
+
   <body>
     <div class="container">
       <!-- Banner -->
       <div class="banner">
         <h2>
           Chatify
+          <span id="me">Sending messages as in </span>
         </h2>
       </div>
-      <div class="text">
-        <span class="iconify" data-icon="bi:chat-square-text" data-inline="false"></span>
-              <h2>Welcome to Chatify!</h2>
-
-      <p>Chatify is an app made by --Explosion-- and GrahamSH, it is a free online chat app with channels, XSS sanitization,
-        quoting, editing, and much more! Try it out!</p>
-      <a href='index.html' onclick='signup()'>Get started</a>
-      </div>
+      <!-- List -->
+      <ul id="messages"></ul>
+      <!-- Form -->
+      <form onsubmit="sendMessage(); return false">
+        <span id="typing"></span>
+        <input
+          type="text"
+          placeholder="Enter message"
+          id="message"
+          autocomplete="off"
+        />
+        <!-- <button type="submit">Send</button> -->
+      </form>
     </div>
     <button onclick="fullscreen()" id="fullscreen">
-      <span class="iconify" data-icon="octicon:screen-full-16" data-inline="false"></span>
+      <span
+        class="iconify"
+        data-icon="octicon:screen-full-16"
+        data-inline="false"
+      ></span>
     </button>
+    <button onclick="signout()" id="signout">
+      <span
+        class="iconify"
+        data-icon="ph:sign-out-bold"
+        data-inline="false"
+      ></span>
     </button>
   </body>
 </html>
-<style>
-.text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 30px;
-}
-.text h2 {
-  text-align: center;
-}
-.text a {
-  transition: background-color .4s ease;
-  letter-spacing: 2px;
-  background: rgb(118, 184, 206);
-  padding: 10px;
-  border-radius: 5px;
-  text-decoration: none;
-  margin: 15px;
-  color: white;
-}
-.text a:hover {
-  background-color: rgb(112, 214, 112);
-}
-.text .iconify {
-  font-size: 70px;
-  margin: 5px;
-}
-</style>
 <script>
-function signup(){window.localStorage.setItem('fromhome', 'true')}</script>
+  hljs.initHighlightingOnLoad();
+</script>
+<script>
+  window.onmousemove = (e) => {
+    clicktarget = e.target.parentElement.parentElement;
+  };
+</script>
+<script>
+  function signout() {
+    window.localStorage.removeItem("user");
+    removeuser(myName);
+    window.location.reload();
+  }
+</script>
+<script>
+  // User auth
+
+  var users = [];
+  var ids = [];
+
+  firebase
+    .database()
+    .ref("users")
+    .on("child_added", function (snapshot) {
+      users.push(snapshot.val().user);
+      ids.push(snapshot.key);
+    });
+
+  firebase
+    .database()
+    .ref("users")
+    .on("child_removed", function (snapshot) {
+      users = removeitem(snapshot.val().user, users);
+      ids = removeitem(snapshot.key, ids);
+    });
+
+  function adduser(user) {
+    if (!users.includes(user))
+      firebase.database().ref("users").push().set({ user: user });
+  }
+
+  function removeuser(user) {
+    firebase.database().ref("users").child(ids[users.indexOf(user)]).remove();
+  }
+
+  function userexists(user) {
+    if (users.includes(user)) {
+      return true;
+    } else {
+      adduser(user);
+      return false;
+    }
+  }
+  function removeitem(item, array) {
+    var index = array.indexOf(item);
+
+    if (index > -1) {
+      array.splice(index, 1);
+    }
+    return array;
+  }
+</script>
+<script>
+  var typingtext = "";
+  setInterval(() => {
+    if (typing.length > 0) {
+      typingtext =
+        '<img id="typing-img" src="typing.gif" />' +
+        "Typing: " +
+        typing.join(", ");
+    } else {
+      typingtext = "";
+    }
+    if (typing.length == 0) {
+      document.getElementById("message").classList.remove("typing");
+    } else {
+      document.getElementById("message").classList.add("typing");
+    }
+
+    var links = document.querySelectorAll("a");
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i];
+      link.target = "_blank";
+    }
+    if (document.getElementById("typing").innerHTML !== typingtext) {
+      document.getElementById("typing").innerHTML = typingtext;
+    }
+  }, 200);
+</script>
+<img src="typing.gif" style="display: none;" />
