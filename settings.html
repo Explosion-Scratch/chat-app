@@ -26,7 +26,9 @@
         <div class="input"><input type="checkbox" name='showtyping' checked><label for="showtyping">Show me
             typing</label></div>
         <div class="input"><input type="checkbox" name="leavejoin" checked><label for="leavejoin">Show me leaving and
-            joining</label></div>
+            joining</label></div><br>
+        <div class="input"><label for='font'>Font:</label><input type="text" name="font" placeholder="Font"
+            value='Poppins'></div>
       </div>
       <a href="home.html">Back to home</a>
     </div>
@@ -59,6 +61,11 @@
     margin-right: 10px;
   }
 
+  input[type='text'] {
+    padding: 10px;
+    border-radius: 5px;
+  }
+
   .text a {
     transition: background-color .4s ease;
     letter-spacing: 2px;
@@ -78,11 +85,17 @@
   set('sounds');
   set('leavejoin');
   set('showtyping');
+  if (window.localStorage.getItem('font') == '') {
+    window.localStorage.setItem('font', 'Montserrat');
+  } else {
+    document.getElementsByName('font')[0].value = window.localStorage.getItem('font');
+  }
   setInterval(() => {
     window.localStorage.setItem('settings-visited', 'true')
     window.localStorage.setItem('sounds', document.getElementsByName('sounds')[0].checked)
     window.localStorage.setItem('showtyping', document.getElementsByName('showtyping')[0].checked)
     window.localStorage.setItem('leavejoin', document.getElementsByName('leavejoin')[0].checked)
+    window.localStorage.setItem('font', document.getElementsByName('font')[0].value)
   }, (10));
 
   function set(item) {
@@ -99,4 +112,20 @@
       return false
     }
   }
+</script>
+<script>
+  setInterval(() => {
+    // Font
+    try {
+      font.remove();
+
+      font = document.createElement("STYLE");
+      font.innerHTML = `@import url("https://fonts.googleapis.com/css2?family=${window.localStorage.getItem(
+        "font"
+      )}&display=swap");\n* {\n\tfont-family: ${window.localStorage.getItem(
+        "font"
+      )}, Poppins, sans-serif;\n}`;
+      document.body.appendChild(font);
+    } catch (err) { }
+  }, 10);
 </script>

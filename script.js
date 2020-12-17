@@ -8,8 +8,13 @@
 //   --Explosion--
 
 // © 2020 --Explosion--, All rights reserved
+
+// Declare some initial vars
 var windowtime = 0;
 var myChannel = "";
+var clicktarget = null;
+
+// Init firebase.
 var firebaseConfig = {
   apiKey: "AIzaSyCGO99iGzMYFTQZC0p1e_PJdaXw9cIifDw",
   authDomain: "test-project-30164.firebaseapp.com",
@@ -23,35 +28,69 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 function sendMessage() {
-  unread = document.querySelectorAll("li").length + 1;
-  var message = document.getElementById("message").value;
-  if (message != "") {
-    // Save in DB
-    firebase
-      .database()
-      .ref("channel-" + myChannel)
-      .push()
-      .set({
-        sender: escape(myName),
-        message: HtmlSanitizer.SanitizeHtml(html(emotes(emojisfrom(message)))),
-        time: time(),
-        channel: myChannel
-      });
-    // Prevent submit;
-    document.getElementById("message").value = "";
-    document
-      .getElementById("messages")
-      .scrollTo(0, document.getElementById("messages").scrollHeight);
+  if (timesincemessage > 2000) {
+    timesincemessage = 0; // Reset unread in the header
+    unread = document.querySelectorAll("li").length + 1;
+    // Set the message to send
+    var message = document.getElementById("message").value;
+
+    if (badwords(message)) {
+      // Detect bad words
+      alert("No bad words!");
+      // Reset input
+      document.getElementById("message").value = "";
+      // Prevent form submit
+      return false;
+    }
+    if (message != "") {
+      // Save in DB
+      firebase
+        .database()
+        .ref("channels/channel-" + myChannel)
+        .push()
+        .set({
+          sender: escape(myName),
+          message: HtmlSanitizer.SanitizeHtml(
+            html(emotes(emojisfrom(message)))
+          ),
+          time: time(),
+          channel: myChannel,
+          ip: ip
+        });
+      firebase
+        .database()
+        .ref("newest")
+        .push()
+        .set({
+          sender: escape(myName),
+          message: HtmlSanitizer.SanitizeHtml(
+            html(emotes(emojisfrom(message)))
+          ),
+          time: time(),
+          channel: myChannel,
+          ip: ip
+        });
+      // Reset input
+      document.getElementById("message").value = "";
+      // Scroll
+      document
+        .getElementById("messages")
+        .scrollTo(0, document.getElementById("messages").scrollHeight);
+    } else {
+      // Ask for value
+      alert("Please enter a value");
+    }
   } else {
-    alert("Please enter a value");
+    alert("You have to wait 2 seconds between messages.");
   }
+  // Prevent form submit
   return false;
 }
 
 function system_msg(message) {
   firebase
     .database()
-    .ref("channel-" + myChannel)
+    .ref("channels/channel-" + myChannel)
     .push()
     .set({
       sender: "𝘚𝘠𝘚𝘛𝘌𝘔",
@@ -65,9 +104,11 @@ function system_msg(message) {
 }
 // User auth
 
+// Users logged in list along with their id's in firebase
 var users = [];
 var ids = [];
 
+// Update on user add
 firebase
   .database()
   .ref("users")
@@ -76,6 +117,7 @@ firebase
     ids.push(snapshot.key);
   });
 
+// And remove
 firebase
   .database()
   .ref("users")
@@ -85,6 +127,7 @@ firebase
   });
 
 function adduser(user) {
+  // Function to add a user
   if (!users.includes(user))
     firebase.database().ref("users").push().set({
       user: user
@@ -92,37 +135,53 @@ function adduser(user) {
 }
 
 function removeuser(user) {
+  // Function to remove a user
   firebase.database().ref("users").child(ids[users.indexOf(user)]).remove();
 }
 
 function userexists(user) {
+  // Test if user exists by checking in the local array made from firebase data
   if (users.includes(user)) {
     return true;
   } else {
+    adduser(user);
     return false;
   }
 }
 
 function removeitem(item, array) {
-  var index = array.indexOf(item);
+  // Remove an item from an array
 
+  // Get the item's index
+  var index = array.indexOf(item);
+  // Remove it
   if (index > -1) {
     array.splice(index, 1);
   }
+  // Return array
   return array;
 }
-// Get user input
+
+// If the user is new to our app and they navigated here then redirect them to the homepage.
+
 if (window.localStorage.getItem("fromhome") == null) {
   window.location.pathname = "/home.html";
 }
+// Prompt the user for their name and the channel they want to be in
 var myName = promptuser();
+
+// After 2 seconds do this to make sure data is loaded from firebase.
 setTimeout(function () {
+  // IMPERSONATOR ALERT!!! lol
   if (userexists(myName) && window.localStorage.getItem("user") == null) {
+    // If you are impersonating someone
     myName = "Impersonator";
   } else {
+    // If it's just you registering.
     adduser(myName);
   }
   if (window.localStorage.getItem("leavejoin") === "true") {
+    // Add a join message if the user didn't opt out of system notifs.
     system_msg(`${myName} joined the chat`);
   }
 }, 2000);
@@ -130,8 +189,9 @@ setTimeout(function () {
 // Listen for incoming messages
 firebase
   .database()
-  .ref("channel-" + myChannel)
+  .ref("channels/channel-" + myChannel)
   .on("child_added", function (snapshot) {
+    // If 1: you didn't send the message, 2: it's not firebase loading messages onload and 3: It's in my channel and 4: it does not mention me than play a sound.
     if (
       snapshot.val().sender !== myName &&
       windowtime > 2000 &&
@@ -141,12 +201,13 @@ firebase
       playsound();
     }
 
+    // If the message DOES mention me than play a different sound
     if (snapshot.val().message.includes("@" + myName) && windowtime > 4000) {
       playsound(
         "https://proxy.notificationsounds.com/notification-sounds/undeniable-575/download/file-sounds-1122-undeniable.mp3"
       );
     }
-    // Add them
+    // Create and add list items
     var html = "";
     html +=
       "<li onclick='updatemessage(this)' data-channel='" +
@@ -162,26 +223,39 @@ firebase
       html += "Delete";
       html += "</button>";
     }
+    // Message text, date and quote button
     html +=
-      "</span><span id='message-text'>" + snapshot.val().message + "</span>";
+      "</span><span id='message-text'>" +
+      HtmlSanitizer.SanitizeHtml(snapshot.val().message) +
+      "</span>";
     html += `<span id='message-date' data-date='${
       snapshot.val().time
     }'></span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("messages").innerHTML += html;
+
+    // If the message is from the 'system' show something different
     if (snapshot.val().system) {
+      // Display differently.
       document
         .getElementById("message-" + snapshot.key)
         .classList.add("system");
     }
+    // If I wrote the message
     if (snapshot.val().sender == myName) {
+      // Display the message differently.
       document.getElementById("message-" + snapshot.key).classList.add("me");
     }
+    // Scroll down.
     document
       .getElementById("messages")
       .scrollTo(0, document.getElementById("messages").scrollHeight);
+    sanitize(snapshot.key);
   });
 
 function deleteMessage(self) {
+  // Delete a message
+
+  // Confirm the action
   if (
     window.confirm(
       "Are you sure you would like to delete this message? The message will be permantly deleted if you click ok"
@@ -192,19 +266,21 @@ function deleteMessage(self) {
     // Delete
     self.parentElement.parentElement.querySelector("#quote").remove();
 
+    // Remove from DB
     firebase
       .database()
-      .ref("channel-" + myChannel)
+      .ref("channels/channel-" + myChannel)
       .child(id)
       .remove();
   }
 }
 
-// Listener
+// Listen for deleted messages
 firebase
   .database()
-  .ref("channel-" + myChannel)
+  .ref("channels/channel-" + myChannel)
   .on("child_removed", function (snapshot) {
+    // And update and show them. No delete or quote either.
     document.querySelector(
       `#${"message-" + snapshot.key} #message-text`
     ).innerHTML = "<i>Deleted</i>";
@@ -218,7 +294,7 @@ firebase
 // Update on message edit
 firebase
   .database()
-  .ref("channel-" + myChannel)
+  .ref("channels/channel-" + myChannel)
   .on("child_changed", function (snapshot) {
     var html = `<span id='message-sender'>${snapshot.val().sender}`;
     if (snapshot.val().sender == myName) {
@@ -227,20 +303,23 @@ firebase
       html += "Delete";
       html += "</button>";
     }
-    html += `</span><span id='message-text'>${emojisfrom(
-      snapshot.val().message
+    html += `</span><span id='message-text'>${HtmlSanitizer.SanitizeHtml(
+      emojisfrom(snapshot.val().message)
     )}</span><span id='message-date'>${formatted_date(
       snapshot.val().time
     )}</span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("message-" + snapshot.key).innerHTML = html;
+    sanitize(snapshot.key);
   });
 
 function time() {
   // Get seconds
+  // This used to be time-zone specific.
   return Date.now();
 }
 
 function formatted_date(date) {
+  // Return a formatted "___ ago" date
   var output = date_thing(date);
 
   function date_thing(date) {
@@ -269,6 +348,7 @@ function formatted_date(date) {
     }
     return Math.floor(seconds / 30) * 30 + " seconds";
   }
+  // Special cases.
   output = output + " ago";
   output = output.replace(/^-30 seconds ago/, "Just now");
   output = output.replace(/^50 years ago/, "Just now");
@@ -276,13 +356,17 @@ function formatted_date(date) {
   output = output.replace(/^30 seconds ago/, "Less than a minute ago");
   output = output.replace(/^60 seconds ago/, "1 minute ago");
   output = output.replace(/^1 minutes ago/, "1 minute ago");
+  output = output.replace(/^1 hours ago/, "1 hour ago");
   output = output.replace(/^1 days ago/, "1 day ago");
   output = output.replace(/^1 months ago/, "1 month ago");
   output = output.replace(/^1 years ago/, "1 year ago");
+
+  // Return the formatted date
   return output;
 }
 
 function escape(unsafe) {
+  // Escape HTML, thanks to stackoverflow.
   return unsafe
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -292,60 +376,76 @@ function escape(unsafe) {
 }
 
 function promptuser() {
+  // Ask user for their channel and name
+
+  // If they came from the home screen
   if (window.localStorage.getItem("fromhome") !== null) {
     var promptinput = "";
 
+    // If they aren't already logged in.
     if (window.localStorage.getItem("user") == null) {
+      // Initial prompt
       promptinput = prompt("What do you want to be called?");
 
+      // Keep prompting until the user enters something correct.
       while (promptinput == null || promptinput === "") {
+        // Error prompt.
         promptinput = prompt("Error! Try another name!");
       }
+      // Add the user to localStorage, e.g. log them in.
       window.localStorage.setItem(
         "user",
         promptinput.trim().replace(/\s/g, "")
       );
     } else {
+      // If the user is already logged in don't ask for the username.
       promptinput = window.localStorage.getItem("user");
     }
+
+    // Parse url queries from the url. For example https://vnmpd.csb.app/?channel=channelhere
 
     var channelurl = window.location.search;
     channelurl = new URLSearchParams(channelurl);
     channelurl = channelurl.get("channel");
 
     if (channelurl == null) {
+      // If there's no channel in the url ask for one.
       myChannel = prompt("What channel do you want to be in?");
       // Regex for prompt
       while (!/^[a-zA-Z\d]{0,20}$/.test(myChannel) || myChannel == null) {
+        // Keep prompting.
         myChannel = prompt(
           "What channel do you want to be in? (Answer must be only letters and numbers, no spaces) Enter nothing to go to welcome."
         );
       }
+      // Welcome channel for users that don't enter anything.
       if (myChannel == "") {
         myChannel = "welcome";
       }
     } else {
       myChannel = channelurl;
     }
+    // Trim and replace whitespace.
     return promptinput.trim().replace(/\s/g, "");
   }
 }
-var unread = null;
-window.onblur = function () {
-  unread = document.querySelectorAll("li").length;
-};
-window.onfocus = function () {
-  unread = document.querySelectorAll("li").length;
-};
 
 // Stuff that needs to be running constantly
-var typingtime = 500;
+
+// Set typingtimer to a large number to prevent initial 'user is typing'
+var typingtime = 3000;
+var font = "Poppins";
+var timesincemessage = 4000;
 setInterval(() => {
+  timesincemessage += 50;
+  // Increment typing timer.
   typingtime += 50;
   if (typingtime > 1000 && typing.includes(myName)) {
+    // Remove me if I stop typing
     removetyper(myName);
   }
   if (typingtime < 1000 && !typing.includes(myName)) {
+    // Add when user types.
     addtyper(myName);
   }
   blurdelete();
@@ -386,6 +486,18 @@ document.addEventListener("keydown", (e) => {
   unread = document.querySelectorAll("li").length;
 });
 
+// If there are unread messages put them in the header.
+
+var unread = null;
+window.onblur = function () {
+  // This actually resets the header. See the setInterval function later.
+  unread = document.querySelectorAll("li").length;
+};
+// Reset header onblur and onfocus.
+window.onfocus = function () {
+  unread = document.querySelectorAll("li").length;
+};
+
 // Fullscreen mode
 function fullscreen() {
   document.documentElement.requestFullscreen();
@@ -420,10 +532,11 @@ function emotes(str) {
   output = output.replace(/\/cheers/g, "(っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )");
   output = output.replace(/\/infinite/g, "∞");
   output = output.replace(/\/lol/g, "🇱​​​​​🇴​​​​​🇱");
+  output = output.replace(/\/bearhug/g, "ʕっ•ᴥ•ʔっ");
+
   output = output.replace(/\/bear/g, "ʕ·͡ᴥ·ʔ");
   output = output.replace(/\/imposter/g, "ඞඞ");
   output = output.replace(/\/bearflip/g, "ʕノ•ᴥ•ʔノ ︵ ┻━┻");
-  output = output.replace(/\/bearhug/g, "ʕっ•ᴥ•ʔっ");
   output = output.replace(/\/fancy/g, "**•.¸♥¸.•*");
   // This one is actually usefull for making line breaks
   output = output.replace(/\\n/g, "\n");
@@ -448,12 +561,14 @@ function updatedates() {
   for (let i = 0; i < dates.length; i++) {
     const el = dates[i];
     if (formatted_date(el.getAttribute("data-date")) !== el.innerText) {
+      // Only update if it's different. Prevents inspect element from going crazy.
       el.innerText = formatted_date(el.getAttribute("data-date"));
     }
   }
 }
 
 function updatemessage(thing) {
+  // Focus on the message that you're editing.
   thing.focus();
   if (
     thing
@@ -461,6 +576,7 @@ function updatemessage(thing) {
       .innerText.replace("Delete", "")
       .replace("\n", "") === myName
   ) {
+    // Get the actual messageid.
     var messageid = thing.id.replace(/^message-/, "");
     if (
       document.activeElement !== thing.querySelector("#message-text") &&
@@ -487,7 +603,7 @@ function updatemessage(thing) {
 function update(message, newtext) {
   firebase
     .database()
-    .ref("channel-" + myChannel)
+    .ref("channels/channel-" + myChannel)
     .child(message)
     .update({
       sender: escape(myName),
@@ -496,15 +612,30 @@ function update(message, newtext) {
       channel: myChannel
     });
 }
-
+function sanitize(message) {
+  var text = document
+    .getElementById("message-" + message)
+    .querySelector("#message-text").innerHTML;
+  if (text !== HtmlSanitizer.SanitizeHtml(text)) {
+    firebase
+      .database()
+      .ref("channels/channel-" + myChannel)
+      .child(message)
+      .update({
+        message: HtmlSanitizer.SanitizeHtml(text)
+      });
+  }
+}
 // Quote
 function quote(el) {
+  // Quote a message and add "\n\n" to it to escape the <blockquote>
   document.getElementById("message").value += `>${
     el.parentElement.querySelector("#message-text").innerText
   }\\n\\n`;
 }
 
 function blurdelete() {
+  // Unfocus delted messages and stop them from being edited.
   var items = document.querySelectorAll(
     'ul li #message-text[contenteditable="true"]'
   );
@@ -519,6 +650,7 @@ function blurdelete() {
 }
 
 function url() {
+  // Return the url of the channel.
   return `https://${window.location.hostname}/?channel=${myChannel}`;
 }
 var DEBUG = true;
@@ -531,6 +663,7 @@ if (!DEBUG) {
 }
 
 function tomarkdown(text) {
+  // Thanks to GrahamSH for lots of help here! :)
   var converter = new showdown.Converter({
     backslashEscapesHTMLTags: true,
     simplifiedAutoLink: true,
@@ -543,18 +676,19 @@ function tomarkdown(text) {
   var output = converter.makeMarkdown(text);
   return output;
 }
-var clicktarget = null;
 
 function replaceaudio(text) {
+  // Play audio that is sent. Originally intended to replace audio urls with <audio> tags.
   var match = text.match(/(https|http):\/\/[\S]+.[\S]+.mp3/);
   console.log(match);
   playsound(match[0]);
 }
 
-// Typing
+// Typing database.
 var typing = [];
 var typingids = [];
 var typingchannels = [];
+
 firebase
   .database()
   .ref("typing")
@@ -593,10 +727,12 @@ function removetyper(user) {
       .remove();
   }
 }
+
 window.onload = (e) => {
   removetyper(myName);
 };
 
+// Emojis!!!
 var map = {
   ">:(": "😠",
   "<3": "\u2764\uFE0F",
@@ -624,10 +760,12 @@ var map = {
 };
 
 function escapeSpecialChars(regex) {
+  // Escape stuff.
   return regex.replace(/([()[{*+.$^\\|?])/g, "\\$1");
 }
 
 function emojisfrom(text) {
+  // Run through emoji list and replace them.
   var output = text;
   for (var i in map) {
     var regex = new RegExp(escapeSpecialChars(i), "gim");
@@ -636,11 +774,93 @@ function emojisfrom(text) {
   return output;
 }
 
+// System message when window closes.
 window.addEventListener("beforeunload", function (e) {
   if (window.localStorage.getItem("leavejoin") === "true") {
     system_msg(`${myName} disconnected`);
   }
 });
+
+// Reset typingtimer onkeypress.
 document.getElementById("message").onkeypress = (e) => {
   typingtime = 0;
 };
+
+var ipbanned = [];
+
+// Update on user add
+firebase
+  .database()
+  .ref("ipbanned")
+  .on("child_added", function (snapshot) {
+    ipbanned.push(snapshot.val().user);
+  });
+
+function isbanned(user) {
+  // Test if user exists by checking in the local array made from firebase data
+  if (ipbanned.includes(user)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function banuser(user) {
+  firebase.database().ref("ipbanned").push().set({
+    user: user
+  });
+}
+setInterval(function () {
+  if (myName !== null && ip !== null) {
+    if (isbanned(ip)) {
+      alert("You are ip banned.");
+      window.location.href = "about:blank";
+    }
+  }
+}, 100);
+
+function text(url) {
+  return fetch(url).then((res) => res.text());
+}
+var ip = null;
+text("https://www.cloudflare.com/cdn-cgi/trace").then((data) => {
+  let ipRegex = /[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/;
+  ip = data.match(ipRegex)[0];
+});
+
+var _342958346dfkjhsdfdalkj31f = [];
+fetch("https://cdn.jsdelivr.net/npm/badwords@1.0.0/array.js").then(function (
+  response
+) {
+  response.text().then(function (text) {
+    _342958346dfkjhsdfdalkj31f = text
+      .replace('module.exports = ["', "")
+      .replace('"];', "")
+      .replace(/", "/g, " ")
+      .split(" ");
+  });
+});
+fetch("https://cdn.jsdelivr.net/npm/badwords@1.0.0/array.js").then(function (
+  response
+) {
+  response.text().then(function (text) {
+    var newwords = text.split("\n");
+    for (let i = 0; i < newwords.length; i++) {
+      _342958346dfkjhsdfdalkj31f.push(newwords[i]);
+    }
+  });
+});
+// Bad words
+function badwords(text) {
+  text = text
+    .toLowerCase()
+    .replace(/[^0-9a-z ]/gi, "")
+    .split(" ");
+  for (let i = 0; i < text.length; i++) {
+    const word = text[i];
+    if (_342958346dfkjhsdfdalkj31f.includes(word)) {
+      return true;
+    }
+  }
+  return false;
+}

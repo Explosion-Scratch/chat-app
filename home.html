@@ -2,12 +2,24 @@
 <html lang="en">
 
 <head>
+  <!-- Meta stuff -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+  <!-- Import stylesheet -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Import iconify -->
   <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+
+  <!-- Import script -->
   <script src="script.js"></script>
+
+  <!-- Bad words -->
+  <script src="https://cdn.jsdelivr.net/npm/bad-words@3.0.4/lib/badwords.js"></script>
+
+  <!-- Title -->
   <title>Chatify</title>
 </head>
 
@@ -19,14 +31,18 @@
         Chatify
       </h2>
     </div>
+    <!-- Div with text -->
     <div class="text">
+      <!-- Icon -->
       <span class="iconify" data-icon="bi:chat-square-text" data-inline="false"></span>
+      <!-- Header and desc -->
       <h2>Welcome to Chatify!</h2>
 
       <p>Chatify is an app made by --Explosion-- and GrahamSH, it is a free online chat app with channels, XSS
         sanitization,
         quoting, editing, and much more! Try it out!</p>
-      <div class='buttons'><a href='index.html' onclick='signup()'>Get started</a><a href='settings.html'>Go to
+      <!-- Buttons -->
+      <div class='buttons'><a onclick='signup()'>Get started</a><a href='settings.html'>Go to
           settings</a>
       </div>
     </div>
@@ -39,6 +55,7 @@
 
 </html>
 <style>
+  /* General styling */
   .text {
     display: flex;
     flex-direction: column;
@@ -51,7 +68,10 @@
     text-align: center;
   }
 
+  /* Styling for the buttons (Actually link elements) */
   .text a {
+    cursor: pointer;
+    display: inline-block;
     transition: background-color .4s ease;
     letter-spacing: 2px;
     background: rgb(118, 184, 206);
@@ -62,8 +82,9 @@
     color: white;
   }
 
+  /* This is the div containing both buttons */
   .buttons {
-    margin-top: 20px;
+    margin-top: 0px;
   }
 
   .text a:hover {
@@ -77,15 +98,36 @@
 </style>
 <script>
   if (window.localStorage.getItem('user') !== null) {
+    // If the user is already logged in
     window.location.href = `https://vnmpd.csb.app/index.html`
   }
 
+  // This is what happens when the user clicks 'Get started'
   function signup() {
+    // 'fromhome' means that index.html will not redirect back, because we want index.html to redirect here if th euser is not logged in, but at this point the user has not logged in yet.
     window.localStorage.setItem('fromhome', 'true');
     if (window.localStorage.getItem('settings-visited') !== 'true') {
+      // If the user did not visit settings.html set some default settings.
       window.localStorage.setItem('sounds', 'on')
       window.localStorage.setItem('showtyping', 'on')
       window.localStorage.setItem('leavejoin', 'on')
     }
+    window.location.href = `https://vnmpd.csb.app/`
   }
+</script>
+<script>
+  setInterval(() => {
+    // Font
+    try {
+      font.remove();
+
+      font = document.createElement("STYLE");
+      font.innerHTML = `@import url("https://fonts.googleapis.com/css2?family=${window.localStorage.getItem(
+        "font"
+      )}&display=swap");\n* {\n\tfont-family: ${window.localStorage.getItem(
+        "font"
+      )}, Poppins, sans-serif;\n}`;
+      document.body.appendChild(font);
+    } catch (err) { }
+  }, 10);
 </script>

@@ -20,12 +20,17 @@
 
   <!-- Iconify, for icons -->
   <script src="https://code.iconify.design/1/1.0.7/iconify.min.js"></script>
+
+  <!-- Main script -->
   <script defer src="script.js"></script>
 
   <!-- Main stylesheet -->
   <link rel="stylesheet" href="style.css" />
   <title>Chat app</title>
 </head>
+<div id='stars'></div>
+<div id='stars2'></div>
+<div id='stars3'></div>
 
 <body>
   <div class="container">
@@ -33,35 +38,43 @@
     <div class="banner">
       <h2>
         Chatify
+        <!-- Status section -->
         <span id="me">Sending messages as in </span>
       </h2>
     </div>
-    <!-- List -->
+    <!-- Message list -->
     <ul id="messages"></ul>
     <!-- Form -->
     <form onsubmit="sendMessage(); return false">
+      <!-- Who's typing -->
       <span id="typing"></span>
+      <!-- Message input -->
       <input type="text" placeholder="Enter message" id="message" autocomplete="off" />
       <!-- <button type="submit">Send</button> -->
     </form>
   </div>
+  <!-- Fullscreen button -->
   <button onclick="fullscreen()" id="fullscreen">
     <span class="iconify" data-icon="octicon:screen-full-16" data-inline="false"></span>
   </button>
+  <!-- Settings button -->
   <button id="settings" onclick='window.location.href = "https://vnmpd.csb.app/settings.html"'>
     <span class="iconify" data-icon="eva:settings-outline" data-inline="false"></span>
   </button>
+  <!-- Signout button -->
   <button onclick="signout()" id="signout">
     <span class="iconify" data-icon="ph:sign-out-bold" data-inline="false"></span>
   </button>
 </body>
 
 </html>
+<!-- Clicktarget, used to fix editing errors -->
 <script>
   window.onmousemove = (e) => {
     clicktarget = e.target.parentElement.parentElement;
   };
 </script>
+<!-- Signout function -->
 <script>
   function signout() {
     localStorage.clear();
@@ -69,8 +82,9 @@
     window.location.href = "https://vnmpd.csb.app/home.html";
   }
 </script>
+<!-- Console log hello -->
 <script>
-  // User auth
+  // Hello console
   console.log(
     "%c Welcome!",
     "background: transparent; color: lightgreen; border: 3px solid lightblue; padding: 20px; border-radius: 10px; font-size: 40px; font-family: Poppins;"
@@ -79,79 +93,62 @@
     "%cIf someone told you to paste somthing here than please stop. If you know what you're doing and trying to break my app, also please stop. If you are trying to fix a glitch message me at explosion.scratch@gmail.com",
     "color: lightseagreen; padding: 5px; border-radius: 4px; display: block; background: #0002; font-family: Poppins, sans-serif; width: 100%; font-size: 18px;"
   );
-  var users = [];
-  var ids = [];
-
-  firebase
-    .database()
-    .ref("users")
-    .on("child_added", function (snapshot) {
-      users.push(snapshot.val().user);
-      ids.push(snapshot.key);
-    });
-
-  firebase
-    .database()
-    .ref("users")
-    .on("child_removed", function (snapshot) {
-      users = removeitem(snapshot.val().user, users);
-      ids = removeitem(snapshot.key, ids);
-    });
-
-  function adduser(user) {
-    if (!users.includes(user))
-      firebase.database().ref("users").push().set({
-        user: user
-      });
-  }
-
-  function removeuser(user) {
-    firebase.database().ref("users").child(ids[users.indexOf(user)]).remove();
-  }
-
-  function userexists(user) {
-    if (users.includes(user)) {
-      return true;
-    } else {
-      adduser(user);
-      return false;
-    }
-  }
-
-  function removeitem(item, array) {
-    var index = array.indexOf(item);
-
-    if (index > -1) {
-      array.splice(index, 1);
-    }
-    return array;
-  }
 </script>
+<!-- Typing script -->
 <script>
+  // This script gets who's typing and output's it in the #typing span above the #message input.
   var typingtext = "";
   setInterval(() => {
     if (typing.length > 0) {
+      // Make the typing list and add the gif
       typingtext =
         '<img id="typing-img" src="typing.gif" />' +
         "Typing: " +
         typing.join(", ");
     } else {
+      // Don't show anything if no users are typing
       typingtext = "";
     }
+
+    // This section adds/removes the 'typing' class on teh message input, used to fix border-radius issues.
     if (typing.length == 0) {
+      // Add the typing class to the message input to fix border-radius looking terrible
       document.getElementById("message").classList.remove("typing");
     } else {
+      // Also remove it.
       document.getElementById("message").classList.add("typing");
     }
 
+    // Makes all link target blank.
     var links = document.querySelectorAll("a");
     for (let i = 0; i < links.length; i++) {
       const link = links[i];
       link.target = "_blank";
     }
+
+    // Only refresh teh span if something new happens
     if (document.getElementById("typing").innerHTML !== typingtext) {
+      // Update it
       document.getElementById("typing").innerHTML = typingtext;
     }
+    // Repeat every 200ms
   }, 200);
 </script>
+<!-- Preload the typing gif -->
 <img src="typing.gif" style="display: none;" />
+<script>
+  setInterval(() => {
+    // Font
+    try {
+      font.remove();
+
+      font = document.createElement("STYLE");
+      font.innerHTML = `@import url("https://fonts.googleapis.com/css2?family=${window.localStorage.getItem(
+        "font"
+      )}&display=swap");\n* {\n\tfont-family: ${window.localStorage.getItem(
+        "font"
+      )}, Poppins, sans-serif;\n}`;
+      document.body.appendChild(font);
+    } catch (err) { }
+  }, 10);
+</script>

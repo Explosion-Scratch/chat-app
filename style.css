@@ -1,11 +1,16 @@
+/* Import fonts */
 @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Nova+Square&display=swap");
 
+/* Default styling */
 * {
   font-family: Poppins, sans-serif;
   box-sizing: border-box;
 }
-
+*::selection {
+  background-color: rgba(34, 189, 150, 0.568);
+}
+/* No blue outline when focusing on input */
 *:focus {
   outline: none;
 }
@@ -16,6 +21,7 @@
   box-sizing: border-box;
 }
 
+/* Background for body as well as some nice defaults. */
 body {
   display: flex;
   justify-content: center;
@@ -25,6 +31,7 @@ body {
   color: white;
 }
 
+/* Style the container */
 .container {
   display: flex;
   flex-direction: column;
@@ -35,21 +42,19 @@ body {
   background-color: #0005;
   border-radius: 10px;
 }
-
+/* No padding or margin on the form (message input, span with typing) */
 form {
   padding: 0;
   margin: 0;
 }
 
+/* Style system notifications */
 .system {
   width: 90%;
   background-color: rgba(255, 0, 0, 0.2);
 }
 
-ul#messages {
-  height: 380px;
-}
-
+/* Message input box */
 input[type="text"] {
   background-color: #fff3;
   padding: 20px;
@@ -60,11 +65,11 @@ input[type="text"] {
   font-size: 14px;
   color: white;
 }
-
+/* Style the input when typing, fix border-radius */
 input[type="text"].typing {
   border-radius: 0 0 10px 10px;
 }
-
+/* Style the input placeholder, default was too dark. */
 input::placeholder {
   color: #ddd;
 }
@@ -74,17 +79,18 @@ ul#messages {
   overflow: scroll;
   list-style: none;
 }
-
+/* Apply fade animation to last list item */
 ul#messages li:last-child {
   padding: 10px;
   opacity: 0;
   animation: fade-in 2s forwards;
 }
-
+/* Show delete button when list item is hovered */
 ul#messages li:hover button {
   opacity: 1;
 }
 
+/* Delete button is the only button XD */
 button {
   transition: opacity 0.3s ease;
   padding: 5px;
@@ -96,6 +102,7 @@ button {
   border: none;
 }
 
+/* Banner at the top */
 .banner {
   background-color: #0004;
   width: 100%;
@@ -104,17 +111,14 @@ button {
   box-sizing: border-box;
 }
 
-.banner span {
-  font-size: 20px;
-  font-family: "Nova Square";
-}
-
+/* Message sender at the top of the message */
 #message-sender {
   display: block;
   margin-right: 6px;
   color: rgb(196, 229, 240);
 }
 
+/* General message styling */
 li {
   padding: 10px;
   border-radius: 10px;
@@ -122,18 +126,21 @@ li {
   width: 60%;
   height: fit-content;
   word-wrap: break-word;
+
+  /* Assume it's not sent by 'me' */
   margin: 10px 0;
   margin-left: 20px;
-
   float: left;
 }
 
+/* For messages sent by me place them differently (On the right) */
 li.me {
   float: right;
   margin-right: 20px;
 }
 
 @media (max-width: 500px) {
+  /* Mobile styling */
   ul#messages {
     display: flex;
     flex-direction: column;
@@ -145,7 +152,7 @@ li.me {
     float: none;
   }
 }
-
+/* Message date styling */
 #message-date {
   color: #bbb;
   display: block;
@@ -154,49 +161,42 @@ li.me {
   margin-top: 10px;
 }
 
+/* Style links */
 a {
   color: lightblue;
 }
-
+/* Hide overflow-x on the messages list */
 ul#messages {
   overflow-x: hidden;
 }
 
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 5px;
   background: transparent;
 }
-
+/* Scrollbar background */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
+/* Scrollbar indicator */
 ::-webkit-scrollbar-thumb {
   border-radius: 1000px;
+  /* A nice gradient */
   background: linear-gradient(to top, lightblue, lightgreen);
 }
 
-#status {
-  cursor: pointer;
-  display: none;
-  z-index: 1000;
-  width: 100%;
-  font-size: 13px;
-  background: #0002;
-  text-align: center;
-  box-sizing: border-box;
-  border-radius: 5px 5px 0 0;
-}
-
+/* The list of messages */
 ul#messages {
   height: 400px;
 }
 
 form {
   position: relative;
-  /* top: 34px; */
 }
 
+/* Animation for fading in the newest message */
 @keyframes fade-in {
   0% {
     opacity: 0;
@@ -207,6 +207,7 @@ form {
   }
 }
 
+/* Style code blocks */
 code {
   display: block;
   width: 100%;
@@ -217,6 +218,7 @@ code {
   border-radius: 5px;
 }
 
+/* Bottom right buttons */
 #fullscreen,
 #signout,
 #settings {
@@ -230,7 +232,7 @@ code {
   font-size: 20px;
   cursor: pointer;
 }
-
+/* Space them out */
 #signout {
   right: 40px;
 }
@@ -239,16 +241,13 @@ code {
   right: 70px;
 }
 
+/* Style blockquotes (The elements that clicking quote creates) */
 blockquote {
   border-left: 4px solid lightblue;
   padding: 5px;
 }
 
-blockquote #quote-author {
-  display: block;
-  color: lightgreen;
-}
-
+/* Quote link at the bottom of posts */
 #quote {
   font-size: 10px;
   color: lightblue;
@@ -257,6 +256,7 @@ blockquote #quote-author {
   display: inline;
 }
 
+/* The status on the right of the banner */
 #me {
   font-size: 13px;
   float: right;
@@ -266,11 +266,11 @@ blockquote #quote-author {
   display: inline;
   width: 50%;
 }
-
+/* Delete button */
 ul li span button {
   cursor: pointer;
 }
-
+/* Style message editing */
 ul li #message-text[contenteditable="true"] {
   background: #fff3;
   border-radius: 5px;
@@ -279,10 +279,12 @@ ul li #message-text[contenteditable="true"] {
   display: block;
 }
 
+/* Hide the open sandbox button, thanks to GrahamSH */
 iframe[id^="sb"] {
   display: none !important;
 }
 
+/* Table styling */
 table {
   background-color: #fffe;
   color: #101010;
@@ -307,6 +309,7 @@ tr:nth-child(odd) {
   background-color: #fffb;
 }
 
+/* The typing <span> */
 #typing {
   position: relative;
   background: #0004;
@@ -317,6 +320,7 @@ tr:nth-child(odd) {
   border-radius: 10px 10px 0 0;
 }
 
+/* The gif that appears when  user is typing */
 #typing-img {
   width: 20px;
   position: relative;
