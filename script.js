@@ -215,7 +215,9 @@ firebase
       "'id='message-" +
       snapshot.key +
       "'>";
-    html += "<span id='message-sender'>" + snapshot.val().sender;
+    html +=
+      "<span id='message-sender'>" +
+      HtmlSanitizer.SanitizeHtml(snapshot.val().sender);
     // Delete btn
     if (snapshot.val().sender == myName) {
       html +=
@@ -296,7 +298,9 @@ firebase
   .database()
   .ref("channels/channel-" + myChannel)
   .on("child_changed", function (snapshot) {
-    var html = `<span id='message-sender'>${snapshot.val().sender}`;
+    var html = `<span id='message-sender'>${HtmlSanitizer.SanitizeHtml(
+      snapshot.val().sender
+    )}`;
     if (snapshot.val().sender == myName) {
       html +=
         "<button onclick='deleteMessage(this)' data-id='" + snapshot.key + "'>";
@@ -472,7 +476,7 @@ setInterval(() => {
   ).innerHTML = `Sending messages as ${myName.replace(
     /-/g,
     "&#8209;"
-  )} in <a href='${url()}'>${myChannel}</a>`;
+  )} in <a href='${url()}'>${HtmlSanitizer.SanitizeHtml(myChannel)}</a>`;
 }, 50);
 
 // Unread messages in the header
