@@ -364,6 +364,9 @@ function formatted_date(date) {
   output = output.replace(/^1 months ago/, "1 month ago");
   output = output.replace(/^1 years ago/, "1 year ago");
 
+
+  output = HtmlSanitizer.SanitizeHtml(output);
+
   // Return the formatted date
   return output;
 }
