@@ -230,9 +230,8 @@ firebase
       "</span><span id='message-text'>" +
       HtmlSanitizer.SanitizeHtml(snapshot.val().message) +
       "</span>";
-    html += `<span id='message-date' data-date='${HtmlSanitizer.SanitizeHtml(
-      snapshot.val().time
-    )}'></span><span id='quote' onclick='quote(this)'>Quote</span>`;
+    html += `<span id='message-date' data-date='${snapshot.val().time
+      }'></span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("messages").innerHTML += html;
 
     // If the message is from the 'system' show something different
@@ -309,8 +308,8 @@ firebase
     }
     html += `</span><span id='message-text'>${HtmlSanitizer.SanitizeHtml(
       emojisfrom(snapshot.val().message)
-    )}</span><span id='message-date'>${HtmlSanitizer.SanitizeHtml(
-      formatted_date(snapshot.val().time)
+    )}</span><span id='message-date'>${formatted_date(
+      snapshot.val().time
     )}</span><span id='quote' onclick='quote(this)'>Quote</span>`;
     document.getElementById("message-" + snapshot.key).innerHTML = html;
     sanitize(snapshot.key);
@@ -392,10 +391,7 @@ function promptuser() {
       promptinput = prompt("What do you want to be called?");
 
       // Keep prompting until the user enters something correct.
-      while (
-        (promptinput == null || promptinput === "") &&
-        /[a-zA-Z0-9]{3,20}$/.test(promptinput)
-      ) {
+      while ((promptinput == null || promptinput === "") && /[a-zA-Z0-9]{3,20}$/.test(promptinput)) {
         // Error prompt.
         promptinput = prompt("Error! Try another name!");
       }
@@ -465,9 +461,8 @@ setInterval(() => {
   // Update the title
   if (document.querySelectorAll("li").length > unread) {
     // If there are unread messages
-    document.title = `(${
-      document.querySelectorAll("li").length - unread
-    }) Chat App`;
+    document.title = `(${document.querySelectorAll("li").length - unread
+      }) Chat App`;
   } else {
     // If there aren't
     document.title = "Chat App";
@@ -615,7 +610,7 @@ function update(message, newtext) {
     .update({
       sender: escape(myName),
       message: HtmlSanitizer.SanitizeHtml(html(emotes(newtext))),
-      time: HtmlSanitizer.SanitizeHtml(time()),
+      time: time(),
       channel: myChannel
     });
 }
@@ -629,12 +624,6 @@ function sanitize(message) {
       .ref("channels/channel-" + myChannel)
       .child(message)
       .update({
-        time: HtmlSanitizer.SanitizeHtml(
-          document
-            .getElementById("message-" + message)
-            .querySelector("message-date")
-            .innerHTML()
-        ),
         message: HtmlSanitizer.SanitizeHtml(text)
       });
   }
@@ -642,9 +631,8 @@ function sanitize(message) {
 // Quote
 function quote(el) {
   // Quote a message and add "\n\n" to it to escape the <blockquote>
-  document.getElementById("message").value += `>${
-    el.parentElement.querySelector("#message-text").innerText
-  }\\n\\n`;
+  document.getElementById("message").value += `>${el.parentElement.querySelector("#message-text").innerText
+    }\\n\\n`;
 }
 
 function blurdelete() {
@@ -671,7 +659,7 @@ if (!DEBUG) {
   if (!window.console) window.console = {};
   var methods = ["log", "debug", "warn", "info"];
   for (var i = 0; i < methods.length; i++) {
-    console[methods[i]] = function () {};
+    console[methods[i]] = function () { };
   }
 }
 
