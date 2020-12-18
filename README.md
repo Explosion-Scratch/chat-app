@@ -1,2 +1,2 @@
-# Chat-app
-Created with CodeSandbox
+# Chat App
+A cool chat app I made! :)
